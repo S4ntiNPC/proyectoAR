@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contexto Interactivo</title>
+  <style>
+    /* Tipografía amigable y colores neutros/pasteles */
+    body { 
+      font-family: 'Nunito', 'Segoe UI', system-ui, sans-serif; 
+      margin: 0; 
+      background-color: #F7F5F2; /* Beige pastel muy suave */
+      color: #4A4A4A; 
+    }
+    
+    /* Contenedor inmersivo del video */
+    #video-container { 
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
+      background: #111; z-index: 999;
+    }
+    
+    /* object-fit: contain evita que los videos horizontales se corten */
+    video { width: 100%; height: 100%; object-fit: contain; }
+
+    /* Overlay para habilitar el sonido por default */
+    #play-overlay {
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center;
+      z-index: 1000; backdrop-filter: blur(5px);
+    }
+    
+    #btn-play {
+      background: #FFB7B2; color: #fff; border: none; padding: 18px 36px;
+      border-radius: 30px; font-size: 18px; font-weight: bold; cursor: pointer;
+      box-shadow: 0 8px 20px rgba(255, 183, 178, 0.4); transition: transform 0.2s ease;
+    }
+    #btn-play:active { transform: scale(0.95); }
+
+    /* Botón flotante para omitir */
+    #btn-omitir {
+      position: absolute; top: 25px; right: 25px; z-index: 1001;
+      background: rgba(255,255,255,0.2); color: #fff; border: 1px solid rgba(255,255,255,0.5);
+      padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: bold;
+      cursor: pointer; backdrop-filter: blur(4px); display: none;
+    }
+
+    /* Contenedor de la información (oculto hasta que el video acaba o se omite) */
+    #info-container { 
+      display: none; 
+      padding: 40px 24px; 
+      max-width: 600px; 
+      margin: 0 auto; 
+      min-height: 100vh; 
+      box-sizing: border-box;
+      animation: aparecerSuave 0.8s ease forwards;
+    }
+    
+    @keyframes aparecerSuave { 
+      from { opacity: 0; transform: translateY(15px); } 
+      to { opacity: 1; transform: translateY(0); } 
+    }
+    
+    /* Tarjeta estética central */
+    .tarjeta {
+      background: #FFFFFF; border-radius: 28px; padding: 35px 25px;
+      box-shadow: 0 12px 35px rgba(0,0,0,0.04);
+    }
+
+    .header { margin-bottom: 20px; }
+    
+    .tag { 
+      display: inline-block; background: #D4E4E6; color: #385E63; 
+      padding: 8px 16px; border-radius: 20px; font-size: 0.85em; 
+      font-weight: 700; margin-bottom: 16px; 
+    }
+    
+    h1 { margin: 0 0 12px 0; font-size: 26px; color: #2C2C2C; }
+    .descripcion { line-height: 1.7; color: #666; font-size: 16px; }
+    
+    .btn-volver { 
+      display: block; width: 100%; padding: 18px; margin-top: 35px; 
+      background: #FFB7B2; color: #fff; border: none; border-radius: 20px; 
+      font-size: 16px; font-weight: bold; cursor: pointer; 
+      text-align: center; text-decoration: none; box-sizing: border-box;
+      transition: background 0.3s ease, transform 0.2s ease;
+    }
+    .btn-volver:hover { background: #FF9E99; transform: scale(0.98); }
+  </style>
+</head>
+<body>
+
+  <div id="video-container">
+    <!-- Pantalla previa para requerir la interacción del usuario y habilitar sonido -->
+    <div id="play-overlay">
+      <button id="btn-play">▶ Reproducir Recuerdo</button>
+    </div>
+    
+    <!-- Botón para saltar directo a la tarjeta -->
+    <button id="btn-omitir">Omitir ⏭</button>
+
+    <!-- Ya no usamos muted ni autoplay. Todo lo controla el usuario -->
+    <video id="video-player" playsinline>
+      Tu navegador no soporta reproducción de video.
+    </video>
+  </div>
+
+  <div id="info-container">
+    <div class="tarjeta">
+      <div class="header">
+        <span class="tag" id="ui-ubicacion">📍 Ubicación</span>
+        <h1 id="ui-titulo">Cargando...</h1>
+      </div>
+      <div class="descripcion" id="ui-descripcion"></div>
+      
+      <a href="index.html" class="btn-volver">Escanear otro recuerdo</a>
+    </div>
+  </div>
+
+  <script>
+    const baseDeDatos = {
+      "Enactus": {
+        titulo: "Campus Chihuahua en Enactus",
+        ubicacion: "CDMX",
+        videoUrl: "./ENACTUS.mp4", 
+        descripcion: "Un vistazo a la experiencia de Enactus en el campus de Chihuahua, capturando momentos clave y la esencia del evento."
+      },
+      "NocheMexa": {
+        titulo: "Un poco de la Vivencia en la Universidad",
+        ubicacion: "Noche Mexa, Campus Chihuahua",
+        videoUrl: "./MEXA.mp4", 
+        descripcion: "Un vistazo a la experiencia de Enactus en el campus de Chihuahua, capturando momentos clave y la esencia del evento."
+      },
+      "VEX": {
+        titulo: "Equipo de Vex Robotics en Acción",
+        ubicacion: "Desconocido",
+        videoUrl: "./VEX.mp4", 
+        descripcion: "Un vistazo a la experiencia de Enactus en el campus de Chihuahua, capturando momentos clave y la esencia del evento."
+      },
+      "FlowRecap": {
+        titulo: "La vivencia también está en nuestro equipo",
+        ubicacion: "Campus Chihuahua",
+        videoUrl: "./FlowRecap.mp4", 
+        descripcion: "Un vistazo a la experiencia de Enactus en el campus de Chihuahua, capturando momentos clave y la esencia del evento."
+      }
+    };
+
+    const params = new URLSearchParams(window.location.search);
+    const idEscaneado = params.get('id') || "Enactus"; 
+    const datosMuestra = baseDeDatos[idEscaneado];
+
+    const videoContainer = document.getElementById('video-container');
+    const videoPlayer = document.getElementById('video-player');
+    const infoContainer = document.getElementById('info-container');
+    const playOverlay = document.getElementById('play-overlay');
+    const btnPlay = document.getElementById('btn-play');
+    const btnOmitir = document.getElementById('btn-omitir');
+
+    if(datosMuestra) {
+        document.getElementById('ui-titulo').innerText = datosMuestra.titulo;
+        document.getElementById('ui-ubicacion').innerText = `📍 ${datosMuestra.ubicacion}`;
+        document.getElementById('ui-descripcion').innerText = datosMuestra.descripcion;
+        videoPlayer.src = datosMuestra.videoUrl;
+    }
+
+    // Lógica del botón Reproducir
+    btnPlay.addEventListener('click', () => {
+      playOverlay.style.display = 'none'; // Oculta el menú
+      btnOmitir.style.display = 'block'; // Muestra el botón de omitir
+      videoPlayer.play(); // Inicia el video con sonido activado
+    });
+
+    // Lógica compartida para ocultar video y mostrar información
+    const mostrarInformacion = () => {
+      videoPlayer.pause();
+      videoContainer.style.display = 'none';
+      infoContainer.style.display = 'block';
+    };
+
+    // Al terminar el video naturalmente
+    videoPlayer.addEventListener('ended', mostrarInformacion);
+
+    // Al presionar el botón de Omitir
+    btnOmitir.addEventListener('click', mostrarInformacion);
+  </script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Experiencia AR - Memorias</title>
+    <!-- Librerías de AR -->
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
+    <style>
+      body { margin: 0; overflow: hidden; font-family: 'Segoe UI', system-ui, sans-serif; }
+      
+      /* Estilo del mensaje flotante más amigable y redondeado */
+      #ui-mensaje {
+        position: absolute; top: 24px; left: 50%; transform: translateX(-50%);
+        background: rgba(45, 45, 45, 0.85); color: #fff; padding: 14px 28px;
+        border-radius: 30px; z-index: 10; text-align: center; font-size: 15px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.15); backdrop-filter: blur(5px);
+        transition: background 0.3s ease; white-space: nowrap;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Interfaz de usuario básica -->
+    <div id="ui-mensaje">Escaneando... Apunta a una imagen</div>
+
+    <!-- Escena AR apuntando a tu archivo local targets.mind -->
+    <a-scene mindar-image="imageTargetSrc: ./targets.mind; autoStart: true; uiScanning: no;" 
+             color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" 
+             vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
+      
+      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+      
+      <!-- Las 5 entidades vinculadas a tu arreglo compilado -->
+      <a-entity mindar-image-target="targetIndex: 0" id="marcador-Enactus"></a-entity>
+      <a-entity mindar-image-target="targetIndex: 1" id="marcador-NocheMexa"></a-entity>
+      <a-entity mindar-image-target="targetIndex: 2" id="marcador-VEX"></a-entity>
+      <a-entity mindar-image-target="targetIndex: 3" id="marcador-FlowRecap"></a-entity>
+    </a-scene>
+
+    <script>
+      const mensaje = document.querySelector('#ui-mensaje');
+
+      // Función reutilizable para configurar cada marcador
+      const configurarMarcador = (idElemento, idParametro) => {
+        const marcador = document.querySelector(idElemento);
+        
+        marcador.addEventListener('targetFound', () => {
+          mensaje.innerHTML = "¡Imagen detectada! Abriendo contexto...";
+          mensaje.style.background = "rgba(76, 175, 80, 0.9)"; // Cambia a verde amigable
+          document.querySelector('a-scene').systems['mindar-image-system'].pause();
+          
+          setTimeout(() => {
+              window.location.href = `info.html?id=${idParametro}`; 
+          }, 1200);
+        });
+
+        marcador.addEventListener('targetLost', () => {
+          mensaje.innerHTML = "Escaneando... Apunta a una imagen";
+          mensaje.style.background = "rgba(45, 45, 45, 0.85)";
+        });
+      };
+
+      // Inicializamos las 4 imágenes con su respectivo ID para la base de datos
+      configurarMarcador('#marcador-Enactus', 'Enactus');
+      configurarMarcador('#marcador-NocheMexa', 'NocheMexa');
+      configurarMarcador('#marcador-VEX', 'VEX');
+      configurarMarcador('#marcador-FlowRecap', 'FlowRecap');
+    </script>
+  </body>
+</html>
