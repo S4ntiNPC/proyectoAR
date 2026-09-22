@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Contexto Interactivo</title>
+  <title>Contexto Interactivo - Universidad</title>
   <style>
-    /* Tipografía amigable y colores neutros/pasteles */
+    /* Tipografía y fondo general */
     body { 
-      font-family: 'Nunito', 'Segoe UI', system-ui, sans-serif; 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
       margin: 0; 
-      background-color: #F7F5F2; /* Beige pastel muy suave */
-      color: #4A4A4A; 
+      background-color: #F4F4F9; /* Fondo claro y limpio */
+      color: #333; 
     }
     
     /* Contenedor inmersivo del video */
@@ -25,14 +25,16 @@
     /* Overlay para habilitar el sonido por default */
     #play-overlay {
       position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center;
+      background: rgba(0, 105, 92, 0.7); /* Verde oscuro institucional semitransparente */
+      display: flex; align-items: center; justify-content: center;
       z-index: 1000; backdrop-filter: blur(5px);
     }
     
     #btn-play {
-      background: #FFB7B2; color: #fff; border: none; padding: 18px 36px;
+      background: #00C853; /* Verde brillante institucional */
+      color: #fff; border: none; padding: 18px 36px;
       border-radius: 30px; font-size: 18px; font-weight: bold; cursor: pointer;
-      box-shadow: 0 8px 20px rgba(255, 183, 178, 0.4); transition: transform 0.2s ease;
+      box-shadow: 0 8px 20px rgba(0, 200, 83, 0.4); transition: transform 0.2s ease;
     }
     #btn-play:active { transform: scale(0.95); }
 
@@ -47,8 +49,8 @@
     /* Contenedor de la información (oculto hasta que el video acaba o se omite) */
     #info-container { 
       display: none; 
-      padding: 40px 24px; 
-      max-width: 600px; 
+      padding: 0; /* Eliminamos el padding superior para la cabecera */
+      max-width: 100%; 
       margin: 0 auto; 
       min-height: 100vh; 
       box-sizing: border-box;
@@ -59,60 +61,92 @@
       from { opacity: 0; transform: translateY(15px); } 
       to { opacity: 1; transform: translateY(0); } 
     }
+
+    /* Cabecera institucional superior */
+    .institucional-header {
+      background-color: #00695C; /* Verde oscuro institucional */
+      padding: 15px 20px;
+      text-align: center;
+      border-bottom: 4px solid #00C853; /* Borde verde brillante */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .institucional-header img {
+      height: 40px; /* Altura sugerida para el logo */
+      max-width: 100%;
+      /* Si no tienes la imagen del logo lista, este texto alternativo mantendrá la estructura */
+    }
     
+    /* Contenedor central de la tarjeta */
+    .contenido-central {
+      padding: 30px 24px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
     /* Tarjeta estética central */
     .tarjeta {
-      background: #FFFFFF; border-radius: 28px; padding: 35px 25px;
-      box-shadow: 0 12px 35px rgba(0,0,0,0.04);
+      background: #FFFFFF; border-radius: 12px; padding: 30px 25px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+      border-top: 5px solid #00C853; /* Acento institucional en la tarjeta */
     }
 
     .header { margin-bottom: 20px; }
     
     .tag { 
-      display: inline-block; background: #D4E4E6; color: #385E63; 
-      padding: 8px 16px; border-radius: 20px; font-size: 0.85em; 
+      display: inline-block; background: #00C853; /* Verde brillante */
+      color: #FFFFFF; 
+      padding: 6px 14px; border-radius: 20px; font-size: 0.85em; 
       font-weight: 700; margin-bottom: 16px; 
     }
     
-    h1 { margin: 0 0 12px 0; font-size: 26px; color: #2C2C2C; }
-    .descripcion { line-height: 1.7; color: #666; font-size: 16px; }
+    h1 { margin: 0 0 12px 0; font-size: 24px; color: #00695C; /* Título en verde oscuro */ }
+    .descripcion { line-height: 1.6; color: #555; font-size: 16px; }
     
     .btn-volver { 
-      display: block; width: 100%; padding: 18px; margin-top: 35px; 
-      background: #FFB7B2; color: #fff; border: none; border-radius: 20px; 
+      display: block; width: 100%; padding: 16px; margin-top: 30px; 
+      background: #00695C; /* Verde oscuro */
+      color: #fff; border: none; border-radius: 8px; 
       font-size: 16px; font-weight: bold; cursor: pointer; 
       text-align: center; text-decoration: none; box-sizing: border-box;
-      transition: background 0.3s ease, transform 0.2s ease;
+      transition: background 0.3s ease;
     }
-    .btn-volver:hover { background: #FF9E99; transform: scale(0.98); }
+    .btn-volver:hover { background: #004D40; /* Tono más oscuro al hacer hover */ }
   </style>
 </head>
 <body>
 
   <div id="video-container">
-    <!-- Pantalla previa para requerir la interacción del usuario y habilitar sonido -->
     <div id="play-overlay">
       <button id="btn-play">▶ Reproducir Recuerdo</button>
     </div>
     
-    <!-- Botón para saltar directo a la tarjeta -->
     <button id="btn-omitir">Omitir ⏭</button>
 
-    <!-- Ya no usamos muted ni autoplay. Todo lo controla el usuario -->
     <video id="video-player" playsinline>
       Tu navegador no soporta reproducción de video.
     </video>
   </div>
 
   <div id="info-container">
-    <div class="tarjeta">
-      <div class="header">
-        <span class="tag" id="ui-ubicacion">📍 Ubicación</span>
-        <h1 id="ui-titulo">Cargando...</h1>
+    <!-- Cabecera institucional -->
+    <div class="institucional-header">
+      <!-- Reemplaza "logo_tecmilenio.png" con la ruta a la imagen real de tu logo -->
+      <img src="logo_tecmilenio.png" alt="Logo Universidad Tecmilenio">
+    </div>
+
+    <div class="contenido-central">
+      <div class="tarjeta">
+        <div class="header">
+          <span class="tag" id="ui-ubicacion">📍 Ubicación</span>
+          <h1 id="ui-titulo">Cargando...</h1>
+        </div>
+        <div class="descripcion" id="ui-descripcion"></div>
+        
+        <a href="index.html" class="btn-volver">Escanear otro recuerdo</a>
       </div>
-      <div class="descripcion" id="ui-descripcion"></div>
-      
-      <a href="index.html" class="btn-volver">Escanear otro recuerdo</a>
     </div>
   </div>
 
@@ -164,9 +198,9 @@
 
     // Lógica del botón Reproducir
     btnPlay.addEventListener('click', () => {
-      playOverlay.style.display = 'none'; // Oculta el menu
-      btnOmitir.style.display = 'block'; // Muestra el botón de omitir
-      videoPlayer.play(); // Inicia el video con sonido activado
+      playOverlay.style.display = 'none';
+      btnOmitir.style.display = 'block';
+      videoPlayer.play();
     });
 
     // Lógica compartida para ocultar video y mostrar información
@@ -176,10 +210,7 @@
       infoContainer.style.display = 'block';
     };
 
-    // Al terminar el video naturalmente
     videoPlayer.addEventListener('ended', mostrarInformacion);
-
-    // Al presionar el botón de Omitir
     btnOmitir.addEventListener('click', mostrarInformacion);
   </script>
 </body>
